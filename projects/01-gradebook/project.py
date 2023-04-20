@@ -5,7 +5,7 @@ import pandas as pd
 import numpy as np
 import os
 
-late_threshold = 10
+late_threshold = 5
 
 # ---------------------------------------------------------------------
 # QUESTION 1
@@ -142,6 +142,7 @@ def total_points(grades):
     project_portion = 0.3 * projects_total(grades)
     checkpoints_portion = calc_disc_or_check(grades, names, 'checkpoint')
     discussions_portion = calc_disc_or_check(grades, names, 'disc')
+    print(discussions_portion)
     midterm_portion = 0.15 * (grades['Midterm'].fillna(0) / grades['Midterm - Max Points'])
     final_portion = 0.3 * (grades['Final'].fillna(0) / grades['Final - Max Points'])
     # print(lab_portion[0], project_portion[0], checkpoints_portion[0], discussions_portion[0], midterm_portion[0], final_portion[0])
@@ -202,8 +203,16 @@ def z_score(ser):
     return (ser - ser.mean()) / ser.std(ddof=0)
     
 def add_post_redemption(grades_combined):
-    ...
-
+    midterm_pre = grades_combined['Midterm'].fillna(0) / grades_combined['Midterm - Max Points']
+    added = grades_combined.assign(**{'Midterm Score Pre-Redemption': midterm_pre})
+    raw_redemption = grades_combined['Raw Redemption Score']
+    redemption_z_scores = z_score(raw_redemption)
+    midterm_z_scores = z_score(midterm_pre)
+    redemption_grade = redemption_z_scores * midterm_pre.std(ddof=0) + midterm_pre.mean()
+    added['Midterm Score Post-Redemption'] = np.where(midterm_z_scores >= redemption_z_scores, \
+        midterm_pre, redemption_grade.clip(upper=1))
+    
+    return added
 
 # ---------------------------------------------------------------------
 # QUESTION 11
@@ -211,7 +220,15 @@ def add_post_redemption(grades_combined):
 
 
 def total_points_post_redemption(grades_combined):
-    ...
+    pre_redemption = total_points(grades_combined)
+    post_redemption = add_post_redemption(grades_combined)
+    print(post_redemption['Midterm Score Pre-Redemption'])
+    updated = pre_redemption - 0.15*post_redemption['Midterm Score Pre-Redemption'] + 0.15*post_redemption['Midterm Score Post-Redemption']
+    print(pre_redemption,updated)
+    return updated
     
 def proportion_improved(grades_combined):
-    ...
+    pre_proportions = letter_proportions(total_points(grades_combined))
+    post_proportions = letter_proportions(total_points_post_redemption(grades_combined))
+    differences = post_proportions - pre_proportions
+    return sum(differences[differences > 0])
