@@ -15,10 +15,12 @@ import plotly.express as px
 
 
 def count_monotonic(arr):
-    ...
+    diffs = np.diff(arr)
+    return diffs[diffs < 0].size
 
 def monotonic_violations_by_country(vacs):    
-    ...
+    by_country = vacs.groupby('Country_Region').agg({'Doses_admin': count_monotonic, 'People_at_least_one_dose': count_monotonic})
+    return by_country.rename(columns={'Doses_admin': 'Doses_admin_monotonic', 'People_at_least_one_dose': 'People_at_least_one_dose_monotonic'})
 
 
 # ---------------------------------------------------------------------
@@ -27,7 +29,9 @@ def monotonic_violations_by_country(vacs):
 
 
 def robust_totals(vacs):
-    ...
+    percentiled = vacs.groupby('Country_Region').agg({'Doses_admin': lambda x : np.percentile(x, 97), \
+'People_at_least_one_dose': lambda x : np.percentile(x, 97)})
+    return percentiled
 
 
 # ---------------------------------------------------------------------
@@ -67,7 +71,11 @@ def draw_choropleth(tots, pops_fixed):
 
 
 def clean_israel_data(df):
-    ...
+    copy = df.copy()
+    copy['Age'] = df['Age'].replace('-', np.NaN).astype(float)
+    copy['Vaccinated'] = df['Vaccinated'].astype(bool)
+    copy['Severe Sickness'] = df['Severe Sickness'].astype(bool)
+    return copy
 
 
 # ---------------------------------------------------------------------
@@ -89,7 +97,10 @@ def missingness_type():
 
 
 def effectiveness(df):
-    ...
+    by_vaccinated = df.groupby('Vaccinated').mean()
+    pu = by_vaccinated.loc[False]['Severe Sickness']
+    pv = by_vaccinated.loc[True]['Severe Sickness']
+    return (pu - pv) / pu
 
 
 # ---------------------------------------------------------------------
@@ -117,7 +128,8 @@ def stratified_effectiveness(df):
 # ---------------------------------------------------------------------
 # QUESTION 10
 # ---------------------------------------------------------------------
-
+def calc_effectiveness(pu, pv):
+    return (pu - pv) / pu
 
 def effectiveness_calculator(
     *,
@@ -128,7 +140,13 @@ def effectiveness_calculator(
     old_risk_vaccinated,
     old_risk_unvaccinated
 ):
-    ...
+    out = {}
+    out['Young'] = calc_effectiveness(young_risk_unvaccinated, young_risk_vaccinated)
+    out['Old'] = calc_effectiveness(old_risk_unvaccinated, old_risk_vaccinated)
+    out['Overall'] = calc_effectiveness((1-young_vaccinated_prop)*young_risk_unvaccinated + (1-old_vaccinated_prop)*old_risk_unvaccinated, \
+young_vaccinated_prop*young_risk_vaccinated + old_vaccinated_prop*old_risk_vaccinated)
+    return out
+
 
 
 # ---------------------------------------------------------------------
@@ -137,4 +155,5 @@ def effectiveness_calculator(
 
 
 def extreme_example():
-    ...
+    return {'young_vaccinated_prop': 0.56, 'old_vaccinated_prop': 0.99, 'young_risk_vaccinated': 0.01, 'young_risk_unvaccinated': 0.2, \
+'old_risk_vaccinated': 0.1, 'old_risk_unvaccinated': 0.59}
