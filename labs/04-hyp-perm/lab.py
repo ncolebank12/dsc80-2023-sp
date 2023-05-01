@@ -13,7 +13,12 @@ import os
 
 
 def prime_time_logins(login):
-    ...
+    out = login.copy()
+    out['Time'] = pd.to_datetime(out['Time']).dt.hour
+    out['Time'] = (out['Time'] >= 16) & (out['Time'] < 20)
+    return out.groupby('Login Id').sum()
+
+
 
 
 # ---------------------------------------------------------------------
@@ -22,7 +27,7 @@ def prime_time_logins(login):
 
 
 def count_frequency(login):
-    ...
+    by_id = login.groupby('Login Id').agg(['count',])
 
 
 # ---------------------------------------------------------------------
