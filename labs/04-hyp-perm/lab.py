@@ -96,18 +96,19 @@ def car_p_value():
 
 
 def bhbe_col(heroes):
-    return (heroes['Hair color'].str.lower() == 'blond') & (heroes['Eye color'].str.lower() == 'blue')
+    return (heroes['Hair color'].str.lower().str.contains('blond')) & (heroes['Eye color'].str.lower().str.contains('blue'))
 
 def superheroes_observed_stat(heroes):
     bhbe = heroes[bhbe_col(heroes)]
-    non_bhbe = heroes[~bhbe_col(heroes)]
-    return (bhbe['Alignment'].str.lower() == 'good').mean() - (non_bhbe['Alignment'.str.lower() == 'good']).mean()
+    return (bhbe['Alignment'].str.lower() == 'good').mean()
 
 def simulate_bhbe_null(n):
-    ...
+    results = np.random.multinomial(100, [0.68, 0.32], size=n)
+    return results[:, 0] / 100
+    
 
 def superheroes_calc_pval():
-    ...
+    return [10/100_000, 'Reject']
 
 
 # ---------------------------------------------------------------------
@@ -116,16 +117,21 @@ def superheroes_calc_pval():
 
 
 def diff_of_means(data, col='orange'):
-    ...
+    by_factory = data.groupby('Factory')[col].mean()
+    return abs(by_factory.loc['Yorkville'] - by_factory.loc['Waco'])
 
 
 def simulate_null(data, col='orange'):
-    ...
-
+    shuffled = data.assign(Factory = np.random.permutation(data['Factory']))
+    return diff_of_means(shuffled, col)
 
 def pval_color(data, col='orange'):
-    ...
-
+    n_repetitions = 1000
+    diffs = []
+    for _ in range(n_repetitions):
+        diffs.append(simulate_null(data,col))
+    observed = diff_of_means(data,col)
+    return (diffs >= observed).sum() / n_repetitions
 
 # ---------------------------------------------------------------------
 # QUESTION 8
@@ -133,7 +139,7 @@ def pval_color(data, col='orange'):
 
 
 def ordered_colors():
-    ...
+    return [('yellow', 0.000), ('orange', 0.050), ('red', 0.246), ('green', 0.486), ('purple', 0.982)]
 
 
 # ---------------------------------------------------------------------
@@ -143,7 +149,7 @@ def ordered_colors():
 
 
 def same_color_distribution():
-    ...
+    return (0.007, 'Fail to Reject')
 
 
 # ---------------------------------------------------------------------
@@ -152,4 +158,4 @@ def same_color_distribution():
 
 
 def perm_vs_hyp():
-    ...
+    return ['H', 'H','P', 'H', 'P']
