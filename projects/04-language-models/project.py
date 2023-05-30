@@ -15,7 +15,14 @@ import time
 
 
 def get_book(url):
-    ...
+    res = requests.get(url)
+    text = res.text
+    pattern = r'\*\*\* START.*\*\*\*([\S\s]*)\*\*\* END.*\*\*\*'
+    prog = re.compile(pattern)
+    contents = prog.search(text).group(1)
+    contents = contents.replace('\r\n','\n')
+    time.sleep(5)
+    return contents
 
 
 # ---------------------------------------------------------------------
@@ -24,7 +31,12 @@ def get_book(url):
 
 
 def tokenize(book_string):
-    ...
+    stripped = book_string.strip()
+    with_markers = re.sub(r'\n{2,}', '\x03\x02', stripped)
+    tokens = re.findall(r'\w+|[^\s\w]', stripped)
+    tokens.insert(0, '\x02')
+    tokens.append('\x03')
+    return tokens
 
 
 # ---------------------------------------------------------------------
@@ -40,16 +52,22 @@ class UniformLM(object):
         self.mdl = self.train(tokens)
         
     def train(self, tokens):
-
-        ...
+        uniques = set(tokens)
+        return pd.Series(index=uniques, data = 1/len(uniques))
     
     def probability(self, words):
+        prob = 1
+        for word in words:
+            if word in self.mdl.index:
+                prob *= self.mdl[word]
+            else:
+                return 0
+        return prob
 
-        ...
+
         
     def sample(self, M):
-
-        ...
+        return ' '.join(self.mdl.sample(M, replace=True).index)
 
 
 # ---------------------------------------------------------------------
@@ -64,16 +82,19 @@ class UnigramLM(object):
         self.mdl = self.train(tokens)
     
     def train(self, tokens):
-
-        ...
+        return pd.Series(tokens).value_counts() / len(tokens)
     
     def probability(self, words):
-
-        ...
+        prob = 1
+        for word in words:
+            if word in self.mdl.index:
+                prob *= self.mdl[word]
+            else:
+                return 0
+        return prob
         
     def sample(self, M):
-
-        ...
+        return ' '.join(self.mdl.sample(M, replace=True, weights=self.mdl).index)
 
 
 # ---------------------------------------------------------------------

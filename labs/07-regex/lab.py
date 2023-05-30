@@ -30,7 +30,7 @@ def match_1(string):
     >>> match_1("1b[#d] _")
     True
     """
-    pattern = '^..\[..\].*'
+    pattern = r'^..\[..\].*'
 
     # Do not edit following code
     prog = re.compile(pattern)
@@ -57,7 +57,7 @@ def match_2(string):
     >>> match_2("(858) 456-7890b")
     False
     """
-    pattern = '^\(858\) \d{3}-\d{4}$'
+    pattern = r'^\(858\) \d{3}-\d{4}$'
 
     # Do not edit following code
     prog = re.compile(pattern)
@@ -84,7 +84,7 @@ def match_3(string):
     >>> match_3(" adf!qe? ")
     False
     """
-    pattern = '^[a-zA-Z0-9 ?]{5,9}\?$'
+    pattern = r'^[a-zA-Z0-9 ?]{5,9}\?$'
 
     # Do not edit following code
     prog = re.compile(pattern)
@@ -113,7 +113,7 @@ def match_4(string):
     >>> match_4("$!@$")
     False
     """
-    pattern = '^\$[^abc$]*\$(A|a)+(B|b)+(C|c)+$'
+    pattern = r'^\$[^abc$]*\$(A|a)+(B|b)+(C|c)+$'
 
     # Do not edit following code
     prog = re.compile(pattern)
@@ -132,11 +132,11 @@ def match_5(string):
     >>> match_5("dsc80+.py")
     False
     """
-    pattern = '^[A-Za-z0-9_]+\.py$'
+    pattern = r'^[A-Za-z0-9_]+\.py$'
 
     # Do not edit following code
     prog = re.compile(pattern)
-    return prog.search(string) is not None
+    return prog.search(string.lower()) is not None
 
 
 def match_6(string):
@@ -153,7 +153,7 @@ def match_6(string):
     >>> match_6("ABCDEF_ABCD")
     False
     """
-    pattern = '^[a-z]+_[a-z]+$'
+    pattern = r'^[a-z]+_[a-z]+$'
 
     # Do not edit following code
     prog = re.compile(pattern)
@@ -172,7 +172,7 @@ def match_7(string):
     >>> match_7("_ncde")
     False
     """
-    pattern = '^_.*_$'
+    pattern = r'^_.*_$'
 
     # Do not edit following code
     prog = re.compile(pattern)
@@ -194,7 +194,7 @@ def match_8(string):
     >>> match_8("ASDJKL9380JKAL")
     True
     """
-    pattern = '^[^Oi1]+$'
+    pattern = r'^[^Oi1]+$'
 
     # Do not edit following code
     prog = re.compile(pattern)
@@ -218,7 +218,7 @@ def match_9(string):
     >>> match_9('TX-32-SAN-4491')
     False
     '''
-    pattern = '^(NY-\d{2}-[A-Z]{3}|CA-\d{2}-(SAN|LAX))-\d{4}$'
+    pattern = r'^(NY-\d{2}-[A-Z]{3}|CA-\d{2}-(SAN|LAX))-\d{4}$'
 
     # Do not edit following code
     prog = re.compile(pattern)
